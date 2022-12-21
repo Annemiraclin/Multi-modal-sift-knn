@@ -1,32 +1,31 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
+#IMPORTS
 
 import cv2 
 import pickle 
 import numpy as np
-
-
 import os
 from os import listdir
 from os.path import isfile, join
 
-from ipynb.fs.full.Verify import verify 
-from ipynb.fs.full.Iris_functions import computeSIFTEye 
-from ipynb.fs.full.Palmprint_functions import computeSIFTPalm
+from iVerify import verify 
+from Iris_functions import computeSIFTEye 
+from Palmprint_functions import computeSIFTPalm
 
-from ipynb.fs.full.Matching import fetchLeftEyeDescriptorFromFile 
-from ipynb.fs.full.Matching import fetchRightEyeDescriptorFromFile
-from ipynb.fs.full.Matching import fetchPalmDescriptorFromFile
+from Matching import fetchLeftEyeDescriptorFromFile 
+from Matching import fetchRightEyeDescriptorFromFile
+from Matching import fetchPalmDescriptorFromFile
 
-from ipynb.fs.full.Matching import calculateMatches
+from Matching import calculateMatches
 
+#MODULE FLOW
+#Imposter images are verified by calling verify function of Verify module in testimposter(i)
+#Legitimate images are verified by calling verify function of Verify module in testlegitimate(i)
 
-
+#Function to test FAR
+#INPUT - PATH OF IMPOSTER DATA
+#OUTPUT - USER VALIDATED/REJECTED
 def testimposter(i): 
-    imposterpath = "/Users/apple/Desktop/datasets/imposter/"+str(i)+"/"
+    imposterpath = "imposter/"+str(i)+"/"
     
     imposterimagelist = []
     
@@ -58,9 +57,11 @@ for k in range(5):
     testimposter(k)
 
 
-
+#Function to test FRR
+#INPUT - PATH OF LEGITIMATE DATA
+#OUTPUT - USER VALIDATED/REJECTED
 def testlegitimate(i): 
-    legitimatepath = "/Users/apple/Desktop/datasets/legitimate/"+str(i)+"/"
+    legitimatepath = "legitimate/"+str(i)+"/"
     
     legitimateimagelist = []
     
