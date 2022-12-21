@@ -53,6 +53,7 @@ def enrol(number):
 
             
         #getting grayscale images
+        #Preparing list of images section from (Dumrewal, A, 2022) was used for this function.
         imagesBWleft = [] 
         for imageName in imageListleft: 
             imagePathleft = "iris/left/"+str(number)+"/"+ str(imageName) 
@@ -70,6 +71,7 @@ def enrol(number):
 
 
         #computing the keypoints and descriptors, converting them to another format
+        #Generating keypoints and Descriptors section from (Dumrewal, A, 2022) was used for this function by changing parameters to fit this project.
         descriptorsleft = []
         for i,image in enumerate(imagesBWleft): 
             print(" Enrolling user left iris: " + imageListleft[i]) 
@@ -111,6 +113,7 @@ def enrol(number):
 
 
         # Store the normalized descriptors for future use
+        #Storing keypoints and Descriptors section from (Dumrewal, A, 2022) was used for this function.
         for i,left in enumerate(descriptorsleft):
             filepath = "desc/"+ str(imageListleft[i].split('.')[0]) + ".txt" 
             with open(filepath, 'wb') as fp: 
