@@ -1,174 +1,106 @@
-#!/usr/bin/env python
-# coding: utf-8
 
-# In[1]:
 
+#IMPORTS
 
 import cv2 
-import pickle 
 import numpy as np
-import matplotlib.pyplot as plt
-from skimage.morphology import disk
 from sklearn.metrics.pairwise import cosine_similarity
-from skimage.morphology import black_tophat, skeletonize, convex_hull_image
-from sklearn import preprocessing
 import scipy
-import math
-import random
-import os
-from os import listdir
-from os.path import isfile, join
 
 
-from ipynb.fs.full.Iris_functions import computeSIFTEye 
-from ipynb.fs.full.Palmprint_functions import computeSIFTPalm
+#FUNCTIONS
+
+#Function to find the shape of Input Image
+def shapeEye(image):
+    height,width = image.shape #height and width of image 
+    return height,width
 
 
 
-iris1path = "/Users/apple/Desktop/datasets/iris/left/2/"
-iris2path = "/Users/apple/Desktop/datasets/iris/right/2/"
-palmpath = "/Users/apple/Desktop/datasets/palm/2/"
-  
+#Function for de-noising and smoothing image 
+def gaussianEye(image):
+	#median blur for de-noising image 
+    median_img_eye = cv2.medianBlur(img_ref_eye,5) 
+    	#gaussian filter for smoothened image
+    gaussian_img_eye = scipy.ndimage.filters.gaussian_filter(median_img_eye,sigma=1.90,order=0,output=None,mode='reflect',cval=0.0,truncate=4.0) 
+    return gaussian_img_eye
 
 
-imageListleft = []
-imageListright = []
-imageListpalm = []
+
+#Function to apply CLAHE histogram equalisation on from Bhattiprolu, D.S. (2022). Changed the values of the parameters for optimised results
+def claheEye(image):
+	#convert image from grayscale to BGR
+    image  = cv2.cvtColor(image,cv2.COLOR_GRAY2BGR)
+	#convert image into LAB format based 
+    lab_img_eye = cv2.cvtColor(image,cv2.COLOR_BGR2LAB)
+	#split the image channels
+    l_eye,a_eye,b_eye = cv2.split(lab_img_eye)
+	#equalize the lightness channel
+    equ_eye = cv2.equalizeHist(l_eye)
+	#creating CLAHE object
+    clahe_eye = cv2.createCLAHE(clipLimit=10.0, tileGridSize=(9,9))
+	#applying CLAHE equalisation on lightness channel
+    clahe_img_eye = clahe_eye.apply(l_eye)
+	#merging the CLAHE image with a and b channels
+    updated_lab_img_eye = cv2.merge((clahe_img_eye,a_eye,b_eye))
+	#convert updated image back to BGR
+    CLAHE_img_eye = cv2.cvtColor(updated_lab_img_eye, cv2.COLOR_LAB2BGR)
+    return CLAHE_img_eye
 
 
-imageListleft = [f for f in listdir(iris1path) if isfile(join(iris1path, f))]
-if ".DS_Store" in imageListleft: imageListleft.remove(".DS_Store")
-
-imageListright = [f for f in listdir(iris2path) if isfile(join(iris2path, f))]
-if ".DS_Store" in imageListright: imageListright.remove(".DS_Store")
-
-imageListpalm = [f for f in listdir(palmpath) if isfile(join(palmpath, f))]
-if ".DS_Store" in imageListpalm: imageListpalm.remove(".DS_Store")
 
 
-imagesBWleft = [] 
-imagesleft = []
-for imageName in imageListleft: 
-    imagePathleft = "/Users/apple/Desktop/datasets/iris/left/2/"+ str(imageName) 
-    imagesBWleft.append(cv2.imread(imagePathleft,0))
+#Iris Segmentation
+def Eye(image):
+	#getting the de-noised image
+    gaussian_img = gaussianEye(image)
+    cimg  = image
+    #Finding pupil circles	
+	#canny edge values set to 50 for getting more edges to detect smaller circles
+    edges = cv2.Canny(gaussian_img,50,50)
+	#hough circle transform to detect the pupil
+    circles_pupil = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
+	#draw circle on the image from the output values
+    circles_pupil = np.uint8(np.around(circles_pupil))
+    for i in circles_pupil[0,:]:
+        cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
+	#get height and width
+    height,width = shapeEye(image)
+	#creating mask
+    mask_pupil = np.zeros((height,width), np.uint8)
+	#creating mask image
+    circle_img_pupil = cv2.circle(mask_pupil,(i[0],i[1]),i[2],(255,255,255),thickness=-1)
 
-imagesBWright = [] 
-imagesright = []
-for imageName in imageListright:  
-    imagePathright = "/Users/apple/Desktop/datasets/iris/right/2/"+ str(imageName) 
-    imagesBWright.append(cv2.imread(imagePathright,0)) 
+
+    #Finding iris circle 
+	#canny edge detection values are lower for detecting bigger circles
+    edges = cv2.Canny(gaussian_img,10,10)
+	#hough circle transform with higher values to detect pupil
+    circles_iris = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,150,param1=80,param2=70,minRadius=0,maxRadius=0)
+	#draw the circle detected on the image
+    circles_iris = np.uint8(np.around(circles_iris))
+    for i in circles_iris[0,:]:
+        cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
+	#create a iris mask
+    mask_iris = np.zeros((height,width), np.uint8)
+	#create iris mask image
+    circle_img_iris = cv2.circle(mask_iris,(i[0],i[1]),i[2],(255,255,255),thickness=-1)
+	#merge iris and pupil masks
+    mask_eye = cv2.subtract(mask_iris, mask_pupil)
+	#retrieve the CLAHE image
+    CLAHE_img_eye = claheEye(image)
+	#apply mask on CLAHE image
+    masked_data = cv2.bitwise_and(CLAHE_img_eye, CLAHE_img_eye, mask=mask_eye)
+    return masked_data
+
+
+
+#SIFT feature Extraction function
+sift = cv2.SIFT_create()
+def computeSIFTEye(image): 
+	#getting the segmented iris image
+    masked_data = Eye(image)
+    return sift.detectAndCompute(masked_data, None)
     
-imagesBWpalm = [] 
-imagespalm = []
-for imageName in imageListpalm:  
-    imagePathpalm = "/Users/apple/Desktop/datasets/palm/2/"+ str(imageName) 
-    imagesBWpalm.append(cv2.imread(imagePathpalm,0)) 
-
-
-descriptorsleft = []
-for i,image in enumerate(imagesBWleft): 
-    print(" Enrolling user2 left iris: " + imageListleft[i]) 
-    des = []
-    l2norm = []
-    _, descriptorTemp = computeSIFTEye(image) 
-    l2norm = preprocessing.normalize(descriptorTemp,norm='l2')
-    des = preprocessing.normalize(l2norm,norm='l1')
-    descriptorsleft.append(des) 
-    print(" Enrolling user2 left iris: " + imageListleft[i])
-    
-    
-descriptorsright = []
-for j,image in enumerate(imagesBWright): 
-    print(" Enrolling user2 right iris: " + imageListright[j]) 
-    des = []
-    l2norm = []
-    _, descriptorTemp = computeSIFTEye(image) 
-    l2norm = preprocessing.normalize(descriptorTemp,norm='l2')
-    des = preprocessing.normalize(l2norm,norm='l1')
-    descriptorsright.append(des) 
-    print(" Enrolling user2 right iris: " + imageListright[j])
-
-
-descriptorspalm = []
-for k,image in enumerate(imagesBWpalm): 
-    print(" Enrolling user2 palm: " + imageListpalm[k]) 
-    des = []
-    l2norm = []
-    _, descriptorTemp = computeSIFTPalm(image) 
-    l2norm = preprocessing.normalize(descriptorTemp,norm='l2')
-    des = preprocessing.normalize(l2norm,norm='l1')
-    descriptorspalm.append(des) 
-    print(" Enrolling user2 palm: " + imageListpalm[k])
-
-# Store the normalized descriptors for future use
-for i,left in enumerate(descriptorsleft):
-    filepath = "/Users/apple/Desktop/datasets/iris/left/descriptors/" + str(imageListleft[i].split('.')[0]) + ".txt" 
-    with open(filepath, 'wb') as fp: 
-        pickle.dump(left, fp) 
-    
-for j,right in enumerate(descriptorsright):
-    filepath = "/Users/apple/Desktop/datasets/iris/right/descriptors/" + str(imageListright[j].split('.')[0]) + ".txt" 
-    with open(filepath, 'wb') as fp:
-        pickle.dump(right, fp)  
-        
-for k,palm in enumerate(descriptorspalm):
-    filepath = "/Users/apple/Desktop/datasets/palm/descriptors/" + str(imageListpalm[k].split('.')[0]) + ".txt" 
-    with open(filepath, 'wb') as fp:
-        pickle.dump(palm, fp)
-        
-        
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
 
 
