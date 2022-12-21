@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
 
-# In[1]:
-
+#IMPORTS
 
 import cv2 
 import pickle 
@@ -12,31 +9,43 @@ import scipy
 import math
 import time
 
-from ipynb.fs.full.Iris_functions import computeSIFTEye 
-from ipynb.fs.full.Palmprint_functions import computeSIFTPalm
+from Iris_functions import computeSIFTEye 
+from Palmprint_functions import computeSIFTPalm
 
-from ipynb.fs.full.Matching import fetchLeftEyeDescriptorFromFile 
-from ipynb.fs.full.Matching import fetchRightEyeDescriptorFromFile
-from ipynb.fs.full.Matching import fetchPalmDescriptorFromFile
+from Matching import fetchLeftEyeDescriptorFromFile 
+from Matching import fetchRightEyeDescriptorFromFile
+from Matching import fetchPalmDescriptorFromFile
 
-from ipynb.fs.full.Matching import calculateMatches
+from Matching import calculateMatches
+
+#MODULE FLOW
+#User uploads 3 images 
+#The images are preprocessed and segmented
+#Feature extraction, normalization is done
+#The descriptors are compared with the other descriptors in the database
 
 
-# In[2]:
-
-
+#Function to compute features and get cancelable template from input
+#INPUT - IRIS IMAGE
+#OUTPUT - CANCELABLE TEMPLATE OF IRIS
 def cancelleftiris(img):
     _, descriptor = computeSIFTEye(img)
     desl2 = preprocessing.normalize(descriptor,norm='l2')
     descriptornorm = preprocessing.normalize(desl2,norm='l1')
     return descriptornorm
 
+#Function to compute features and get cancelable template from input
+#INPUT - IRIS IMAGE
+#OUTPUT - CANCELABLE TEMPLATE OF IRIS
 def cancelrightiris(img):
     _, descriptor = computeSIFTEye(img)
     desl2 = preprocessing.normalize(descriptor,norm='l2')
     descriptornorm = preprocessing.normalize(desl2,norm='l1')
     return descriptornorm
 
+#Function to compute features and get cancelable template from input
+#INPUT - PALM IMAGE
+#OUTPUT - CANCELABLE TEMPLATE OF PALM
 def cancelpalm(img):
     _, descriptor = computeSIFTPalm(img)
     desl2 = preprocessing.normalize(descriptor,norm='l2')
@@ -44,9 +53,11 @@ def cancelpalm(img):
     return descriptornorm
 
 
-# In[3]:
 
 
+#Verification Function
+#INPUT - TWO IRIS IMAGES, ONE PALM IMAGE
+#OUTPUT - VERIFIED USER CAN SEE THE DATA
 def verify(left_iris,right_iris,palm_img):
     
 
@@ -59,6 +70,7 @@ def verify(left_iris,right_iris,palm_img):
         matchleft = calculateMatches(descriptorleft, descriptor_find_left)
         left = len(matchleft)
         
+        #Score for the left iris
         if(left>=10):
             print("User left eye verified.")
           
@@ -67,6 +79,7 @@ def verify(left_iris,right_iris,palm_img):
                 matchright = calculateMatches(descriptorright, descriptor_find_right)
                 right = len(matchright)
                 
+                #Score for the right iris
                 if(right>=10):
                     print("User right eye verified.")
                     
@@ -75,6 +88,7 @@ def verify(left_iris,right_iris,palm_img):
                         matchpalm = calculateMatches(descriptorpalm, descriptor_find_palm)
                         palm = len(matchpalm)
                         
+                        #Score for palm
                         if(palm>=100):  
                             print("User palm verified.")
                             print("User Validated.")
@@ -88,22 +102,3 @@ def verify(left_iris,right_iris,palm_img):
         break
             
     
-
-
-# In[4]:
-
-
-left_iris1 = cv2.imread("/Users/apple/Desktop/datasets/iris/left/0/060_1_1.bmp",0)
-right_iris1 = cv2.imread("/Users/apple/Desktop/datasets/iris/right/0/060_2_1.bmp",0)
-palm_img1 = cv2.imread("/Users/apple/Desktop/datasets/palm/0/032_F_0.JPG",0)
-
-verify(left_iris1,right_iris1,palm_img1)
-
-
-# In[5]:
-
-
-#-0.0020818710327148438
-#-0.006985187530517578
-#-16.00835108757019
-
