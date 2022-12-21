@@ -7,10 +7,16 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import scipy
 
+#FLOW OF MODULE
+#input image -> computeSIFTEye(image) -> Eye(image) -> clahe(image) & gaussianEye(image) & shapeEye(image)
+#output of computeSIFTEye(image) is the keypoints and descriptors
+
 
 #FUNCTIONS
 
 #Function to find the shape of Input Image
+#INPUT - IMAGE
+#OUTPUT - HEIGHT AND WIDTH
 def shapeEye(image):
     height,width = image.shape #height and width of image 
     return height,width
@@ -18,6 +24,8 @@ def shapeEye(image):
 
 
 #Function for de-noising and smoothing image 
+#INPUT - GRAYSCALE IMAGE
+#OUTPUT - SMOOTHENED AND DENOISED IMAGE
 def gaussianEye(image):
 	#median blur for de-noising image 
     median_img_eye = cv2.medianBlur(img_ref_eye,5) 
@@ -27,7 +35,9 @@ def gaussianEye(image):
 
 
 
-#Function to apply CLAHE histogram equalisation on from Bhattiprolu, D.S. (2022). Changed the values of the parameters for optimised results
+#Function to apply CLAHE histogram equalisation on iris from Bhattiprolu, D.S. (2022)lines [36-67]. Changed the values of the parameters for optimised results in the lines [21-35] in this code.
+#INPUT - GRAYSCALE IMAGE
+#OUTPUT - CLAHE EQUALISED IMAGE
 def claheEye(image):
 	#convert image from grayscale to BGR
     image  = cv2.cvtColor(image,cv2.COLOR_GRAY2BGR)
@@ -50,7 +60,9 @@ def claheEye(image):
 
 
 
-#Iris Segmentation
+#Function for Iris Segmentation
+#INPUT - CLAHE IMAGE
+#OUTPUT - SEGMENTED IRIS IMAGE
 def Eye(image):
 	#getting the de-noised image
     gaussian_img = gaussianEye(image)
@@ -96,6 +108,8 @@ def Eye(image):
 
 
 #SIFT feature Extraction function
+#INPUT - GRAYSCALE IMAGE OF IRIS
+#OUTPUT - SIFT FEATURES AND DESCRIPTORS
 sift = cv2.SIFT_create()
 def computeSIFTEye(image): 
 	#getting the segmented iris image
