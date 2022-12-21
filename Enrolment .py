@@ -32,14 +32,10 @@ from Palmprint_functions import computeSIFTPalm
 def enrol(number):
     #calculating time of computation
     start = time.time()
-    #only 30 subjects have been chosen, so this number is set to 30
-    if(number>=30):
-        print('invalid')
-    else:
         #path of images
-        iris1path = "datasets/iris/left/"+str(number)+"/"
-        iris2path = "datasets/iris/right/"+str(number)+"/"
-        palmpath = "datasets/palm/"+str(number)+"/"
+        iris1path = "iris/left/"+str(number)+"/"
+        iris2path = "iris/right/"+str(number)+"/"
+        palmpath = "palm/"+str(number)+"/"
         
         imageListleft = []
         imageListright = []
@@ -59,17 +55,17 @@ def enrol(number):
         #getting grayscale images
         imagesBWleft = [] 
         for imageName in imageListleft: 
-            imagePathleft = "/Users/apple/Desktop/datasets/iris/left/"+str(number)+"/"+ str(imageName) 
+            imagePathleft = "iris/left/"+str(number)+"/"+ str(imageName) 
             imagesBWleft.append(cv2.imread(imagePathleft,0))
 
         imagesBWright = [] 
         for imageName in imageListright:  
-            imagePathright = "/Users/apple/Desktop/datasets/iris/right/"+str(number)+"/"+ str(imageName) 
+            imagePathright = "iris/right/"+str(number)+"/"+ str(imageName) 
             imagesBWright.append(cv2.imread(imagePathright,0)) 
 
         imagesBWpalm = [] 
         for imageName in imageListpalm:  
-            imagePathpalm = "/Users/apple/Desktop/datasets/palm/"+str(number)+"/"+ str(imageName) 
+            imagePathpalm = "palm/"+str(number)+"/"+ str(imageName) 
             imagesBWpalm.append(cv2.imread(imagePathpalm,0)) 
 
 
@@ -116,17 +112,17 @@ def enrol(number):
 
         # Store the normalized descriptors for future use
         for i,left in enumerate(descriptorsleft):
-            filepath = "/Users/apple/Desktop/datasets/desc/"+ str(imageListleft[i].split('.')[0]) + ".txt" 
+            filepath = "desc/"+ str(imageListleft[i].split('.')[0]) + ".txt" 
             with open(filepath, 'wb') as fp: 
                 pickle.dump(left, fp) 
 
         for j,right in enumerate(descriptorsright):
-            filepath = "/Users/apple/Desktop/datasets/desc/" + str(imageListright[j].split('.')[0]) + ".txt" 
+            filepath = "desc/" + str(imageListright[j].split('.')[0]) + ".txt" 
             with open(filepath, 'wb') as fp:
                 pickle.dump(right, fp)  
 
         for k,palm in enumerate(descriptorspalm):
-            filepath = "/Users/apple/Desktop/datasets/desc/" + str(imageListpalm[k].split('.')[0]) + ".txt" 
+            filepath = "desc/" + str(imageListpalm[k].split('.')[0]) + ".txt" 
             with open(filepath, 'wb') as fp:
                 pickle.dump(palm, fp)
 
