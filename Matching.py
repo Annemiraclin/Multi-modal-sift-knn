@@ -1,36 +1,37 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
+#IMPORTS
 
 import cv2 
 import pickle 
 import numpy as np
-import matplotlib.pyplot as plt
-from skimage.morphology import disk
-from sklearn.metrics.pairwise import cosine_similarity
-from skimage.morphology import black_tophat, skeletonize, convex_hull_image
 from sklearn import preprocessing
 import scipy
 import math
-import random
 import os
 from os import listdir
 from os.path import isfile, join
 import time
 
 
+#FLOW OF MODULE
+#Images are extracted from the paths using the fetchDescriptor functions
+#Matching is done using Brute Force Matching with FLANN and KNN, with Lowe's ratio test.
+
+
+#FUNCTIONS
+
+
 imageListleft = []
 imageListright = []
 imageListpalm = []
 
-
-path = "/Users/apple/Desktop/datasets/desc/"
+#descriptor paths
+path = "datasets/descriptors/"
 
 imageList = [f for f in listdir(path) if isfile(join(path, f))]
 if ".DS_Store" in imageList: imageList.remove(".DS_Store")
+
         
+#seperating descriptors into left iris, right iris and palm descriptors for easy comparison.
 for j,img in enumerate(imageList): 
     if "_1_" in imageList[j]: 
         imageListleft.append(img)
@@ -40,10 +41,11 @@ for j,img in enumerate(imageList):
         imageListpalm.append(img)
 
 
-        
+#getting the left iris descriptors from the system 
+#code is from the Dumrewal, A. (2022), fetchDescriptors function, changed the parameters to fit the project scope
 def fetchLeftEyeDescriptorFromFile(j): 
     start = time.time()
-    filepath = "/Users/apple/Desktop/datasets/desc/"+ str(imageListleft[j].split('.')[0]) + ".txt"
+    filepath = "datasets/descriptors/"+ str(imageListleft[j].split('.')[0]) + ".txt"
     file = open(filepath,'rb') 
     descriptor = pickle.load(file) 
     file.close()
@@ -53,9 +55,11 @@ def fetchLeftEyeDescriptorFromFile(j):
     print(start-stop)
     return filename,descriptor
 
+#getting the right iris descriptors from the system
+#code is from the Dumrewal, A. (2022), fetchDescriptors function, changed the parameters to fit the project scope
 def fetchRightEyeDescriptorFromFile(k): 
     start = time.time()
-    filepath = "/Users/apple/Desktop/datasets/desc/" + str(imageListright[k].split('.')[0]) + ".txt"
+    filepath = "datasets/descriptors/" + str(imageListright[k].split('.')[0]) + ".txt"
     file = open(filepath,'rb') 
     descriptor = pickle.load(file) 
     file.close()
@@ -65,9 +69,11 @@ def fetchRightEyeDescriptorFromFile(k):
     print(start-stop)
     return filename,descriptor
 
+#getting the palm descriptors from the system
+#code is from the Dumrewal, A. (2022), fetchDescriptors function, changed the parameters to fit the project scope
 def fetchPalmDescriptorFromFile(l): 
     start = time.time()
-    filepath = "/Users/apple/Desktop/datasets/desc/" + str(imageListpalm[l].split('.')[0]) + ".txt"
+    filepath = "datasets/descriptors/" + str(imageListpalm[l].split('.')[0]) + ".txt"
     file = open(filepath,'rb') 
     descriptor = pickle.load(file) 
     file.close()
@@ -78,6 +84,8 @@ def fetchPalmDescriptorFromFile(l):
     return filename,descriptor
 
 
+#brute force matching using FLANN, KNN and Lowe's ratio number.
+#code is from the Dumrewal, A. (2022), brute force matching section in the ipynb file. The parameters for indexparams and searchparams have been changed to fit needs of project in the lines [84-85]
 bf = cv2.BFMatcher(crossCheck=True)
 def calculateMatches(des1,des2):
         start = time.time()
@@ -93,36 +101,3 @@ def calculateMatches(des1,des2):
         stop = time.time()
         print(start-stop)
         return Results
-
-
-# In[2]:
-
-
-# one = fetchLeftEyeDescriptorFromFile(0)
-# two = fetchLeftEyeDescriptorFromFile(0)
-
-
-#-0.0005240440368652344
-
-
-# In[3]:
-
-
-# fetchRightEyeDescriptorFromFile(0)
-
-#-0.0003371238708496094
-
-
-# In[4]:
-
-
-# fetchPalmDescriptorFromFile(0)
-
-#-0.005274057388305664
-
-
-# In[ ]:
-
-
-
-
