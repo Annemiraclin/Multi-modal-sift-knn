@@ -25,7 +25,7 @@ imageListright = []
 imageListpalm = []
 
 #descriptor paths
-path = "datasets/descriptors/"
+path = "desc/"
 
 imageList = [f for f in listdir(path) if isfile(join(path, f))]
 if ".DS_Store" in imageList: imageList.remove(".DS_Store")
@@ -45,7 +45,7 @@ for j,img in enumerate(imageList):
 #code is from the Dumrewal, A. (2022), fetchDescriptors function, changed the parameters to fit the project scope
 def fetchLeftEyeDescriptorFromFile(j): 
     start = time.time()
-    filepath = "datasets/descriptors/"+ str(imageListleft[j].split('.')[0]) + ".txt"
+    filepath = "desc/"+ str(imageListleft[j].split('.')[0]) + ".txt"
     file = open(filepath,'rb') 
     descriptor = pickle.load(file) 
     file.close()
@@ -59,7 +59,7 @@ def fetchLeftEyeDescriptorFromFile(j):
 #code is from the Dumrewal, A. (2022), fetchDescriptors function, changed the parameters to fit the project scope
 def fetchRightEyeDescriptorFromFile(k): 
     start = time.time()
-    filepath = "datasets/descriptors/" + str(imageListright[k].split('.')[0]) + ".txt"
+    filepath = "desc/" + str(imageListright[k].split('.')[0]) + ".txt"
     file = open(filepath,'rb') 
     descriptor = pickle.load(file) 
     file.close()
@@ -73,7 +73,7 @@ def fetchRightEyeDescriptorFromFile(k):
 #code is from the Dumrewal, A. (2022), fetchDescriptors function, changed the parameters to fit the project scope
 def fetchPalmDescriptorFromFile(l): 
     start = time.time()
-    filepath = "datasets/descriptors/" + str(imageListpalm[l].split('.')[0]) + ".txt"
+    filepath = "desc/" + str(imageListpalm[l].split('.')[0]) + ".txt"
     file = open(filepath,'rb') 
     descriptor = pickle.load(file) 
     file.close()
